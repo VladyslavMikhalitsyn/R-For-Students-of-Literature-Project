@@ -1,2 +1,2 @@
-In R files there probably are bits of code that isn't used anywhere in the project
+In R files there probably are bits of code that aren't used anywhere in the project
 Some bits of code are also present in the Markdown file as well
