@@ -1,0 +1,161 @@
+---
+title: "Comparison of H.G. Wells, Arthur C.Clarke, Isaac Asimov and Robert A. Heinlein"
+author: "Vladyslav Mikhalitsyn"
+date: "02/09/2021"
+output:
+  html_document:
+    theme: journal
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+bibliography: bibliography.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+
+```{r KAA logo, fig.align = 'left', out.width = "75%", fig.cap = "**Figure 1**: The logo of the Department of English and American Studies", echo=FALSE} 
+knitr::include_graphics("./Project/KAA.png")
+```
+
+  Most authors have a certain style that they conciously or not follow, it
+may be expressed in, for example, choice or variety of vocabulary,
+sentence length or more broadly in themes that their works explore. Of
+course it is in no way conclusive, since any two literary works of
+comparable length typically have many themes, it is however indicative
+of the author's tendency towards a particular set of themes and topics.
+
+  The research concerns itself with four famous primarily XX century
+science-fiction authors, H.G. Wells - regarded by some as "father of
+ science fiction" along with Jules Verne, and is usually characterised as a writer
+of social science fiction @Kirby;
+Arthur C. Clarke, whose works concerned
+themselves primarily with space exploration and technology, but also
+with humanity, Isaac Asimov, famous for his "laws of robotics" as
+well as for writing "hard science fiction;" and Robert A. Heinlein, who is considered one of the pioneers of hard science fiction.
+This brief description would already make one assume that earlier science fiction
+authors had been less concerned with the technology as such than later
+authors. This can be explained in part by the technological advancement
+and its literary expression - with the rapidly increasing technological
+development throughout the XXth century, writers were more bold in
+fictional depictions of the future or technology in general, geared with
+additional understanding of a wide array of scientific and engineering
+fields(Clarke was a radar instructor and technician during WW2, and
+Asimov was a professor of Biochemistry), they were also willing to
+provide more description of the intricacies of fictional elements in
+their works, indicative of their turn towards hard science fiction, as
+well as turn from more general notions of "the future" to more specific
+themes and plots, helped by the unending branching of scientific research, and in
+part by the fact of there being volumes of science-fiction written
+before them, from which they were able to gather inspiration and
+envision even more peculiar technology and life.
+
+The fact that all of the "Big Three" science fiction authors of the XX century: Arthur
+C. Clarke, Isaac Asimov and Robert A. Heinlein have had an interest in
+science is, arguably, indicative of the general turn towards hard
+science fiction across the science fiction literary community in the XX century.
+In addition to Clarke's interest in space exploration and technology,
+Asimov's occupation as professor of Biochemistry this turn towards hard scicence fiction, as noted
+above, was driven in large part by the scientific innovation and mass
+availability of electronics in the western countries; but also by the
+fact that the 50s and 60s, when some of the most popular and critically acclaimed works were written, 
+the Space Race
+had brought the notions of new technology and space exploration into the
+public sphere, where it continued to fuel imagination. 
+To support this interpretation, it is worth noting that
+unlike the "Big three," H.G. Wells, as well as Jules Verne, who has had
+great influence with his science fiction in the XIX century, had been
+interested in humanities as opposed to sciences, Jules Verne was a dedicated writer, and
+H.G. Wells combined his literary career with journalism, sociology and
+historiography.
+
+
+For the purpose of this research, ten of the most popular works of each author (according to the number of ratings on Goodreads(skipping anthologies)), are examined.
+
+
+First, comparing authors according to tf-idf, is one metric judging differences or similarities between authors, as well as consistency throughout their works. 
+
+```{r label1234, echo=FALSE, out.width="900x", out.height="500x"}
+knitr::include_graphics("./Project/Tf-idf.pdf")
+```
+
+Heinlein is a clear outsider according to tf_idf.
+Out of the ten works with most tf_idf, six are H.G. Wells' works, and three of the short stories are in the top four, nevertheless, Wells as a whole is second, this indicates that some of the examined works, and short stories in particular, are clear outliers in comparison to the average, as opposed to Heinlein, for whom the opposite is the case - out of ten least tf_idf works he has six as well, which is more in accordance to what is to be expected given his average tf_idf, thus Heinlein is more consistent according to this metric. Later, this consistency will be compared to both lexical diversity and sentiment.
+
+Making a topic model based on the number of authors  +1 topic, and then looking at which books were assigned which topic results in the following plot.
+Generally, topics closely correspond to individual authors, however, there are exceptions. Topics 1-4 generally correspond to H.G. Wells, Robert A. Heinlein, Arthur C. Clarke and Isaac Asimov respectively
+
+```{r label, echo=FALSE, out.width="900x", out.height="800x"}
+knitr::include_graphics("./Project/TopicModellingMallet.pdf")
+```
+
+```{r eval=FALSE, include=FALSE}
+file.create(empty_file <- tempfile())
+docs <- mallet.import(collapsed$title, collapsed$text, empty_file)
+
+mallet_model <- MalletLDA(num.topics = 5)
+mallet_model$loadDocuments(docs)
+mallet_model$train(1000)
+
+tidy_mallet_b <- tidy(mallet_model, matrix = "gamma")
+tidy_mallet_b <- tidy_mallet_b %>% 
+  separate(document, c("title", "chapter"), sep = "_", convert = TRUE)
+
+tidy_mallet_b %>%
+  mutate(title = reorder(title, gamma * topic)) %>%
+  ggplot(aes(factor(topic), gamma)) +
+  geom_boxplot() +
+  facet_wrap(~ title) +
+  labs(x = "topic", y = expression(gamma))
+```
+
+Examined works are generally consistently assigned the common topic with their author, with little overlap with the other ones. Some works, especially Friday, The Cat Who Walked Through Walls, Time Enough for Love and A Stranger in a Strange Land by Robert A. Heinlein are assigned to two unique topics, without overlap with other authors.
+This may indicate that most authors are relatively consistent in their style throughout the examined works. At the same time, Robert A. Heinlein's works, however, seem to target many different themes.
+
+The same topic model with six topcis instead of five provides a similiar result, except now Foundation's Edge is also split between two topics, and generally Isaac Asimov's works are assigned to two topics instead of one, like Heinlein's; still, there is only one aforementioned work that has considerable overlap between topics, unlike, as was previously mentioned, multiple Robert A. Heinlein's works.
+
+```{r eval=FALSE, include=FALSE}
+file.create(empty_file <- tempfile())
+docs <- mallet.import(collapsed$title, collapsed$text, empty_file)
+
+mallet_model <- MalletLDA(num.topics = 6)
+mallet_model$loadDocuments(docs)
+mallet_model$train(1000)
+
+tidy_mallet_b <- tidy(mallet_model, matrix = "gamma")
+tidy_mallet_b <- tidy_mallet_b %>% 
+  separate(document, c("title", "chapter"), sep = "_", convert = TRUE)
+
+tidy_mallet_b %>%
+  mutate(title = reorder(title, gamma * topic)) %>%
+  ggplot(aes(factor(topic), gamma)) +
+  geom_boxplot() +
+  facet_wrap(~ title) +
+  labs(x = "topic", y = expression(gamma))
+```
+
+```{r label1, echo=FALSE, out.width="900x", out.height="800x"}
+knitr::include_graphics("./Project/TopicModellingMallet2.pdf") 
+```
+The following is the MATTR and sentiment anylsis graph with five clusters.
+
+```{r label4, echo=FALSE, out.width="900x", out.height="600x"}
+knitr::include_graphics("./Project/Clustering3.pdf")
+```
+
+
+The graph clearly shows that Arthur C. Clarke is consistent throughout most of the works examined according to both MATTR and sentiment, sharing his cluster only with Heinlein's Luna is a Harsh Mistress. Notably, all four novels in the Space Odyssey series are in this cluster as well, and have only little variation of sentiment. Another notable positioning in this graph are H.G. Wells' works, they are present in four of the five clusters, ranging from the lowest sentiment in The Island of Doctor Moreau to one of the highest in The Door in the Wall and The Magic Shop. There is also a relative consistency of MATTR values as well. Low average tf-idf in Heinlein has not resulted in low MATTR, in fact, Heinlein's MATTR is near the average compared to other authors. 
+The incosistency in sentiment stands to indicate that H.G. Wells used a variety of sentiment depending on the particular work. Additionally, there is no drop in sentiment in other authors compared to H.G. Wells, and given that MATTR is also generally higher, indicates that the turn towards hard science fiction has not substracted from the lexical diversity and richness of the language used, in fact, often the opposite is the case.
+  
+The topic modelling analysis has shown that neither with five nor with six topics is there a significant overlap between H.G. Wells and other authors. Most authors tended to be assigned a specific topic, with a few exceptions. In this regard, this indicates that despite the "Big Three" writing hard science fiction and H.G. Wells leaning towards social science fiction, each author generally maintained his specific approach to exploring the science fiction genre. Amoung the "Big Three" there was no considerable overlap in topic modelling, and generally average sentiment was higher compared to H.G. Wells. So, in general, the examined authors have,  whilst writing hard science fiction, continued to employ a broad and rich writing styles.
+
+
+<!--The following HTML code removes the empty space at the end of the document which somehow occurs if you have a floating toc -->
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 1;"></div>
